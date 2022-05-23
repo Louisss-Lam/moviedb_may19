@@ -53,7 +53,7 @@ function App() {
       </header>
       <div className="movie-container">
       {movies.length > 0 && movies.map((movie) =>
-        <Movie key={movie.id} {...movie} />
+        <Movie key={movie.id} {...movie} /> //我唔係好明{...movie}呢個有咩用處
       )}
     
       </div>
