@@ -1,47 +1,63 @@
-import React, { useState } from 'react';
-import Search from './components/Search';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+
+import Movie from './components/Movie';
+
+const FEATURED_API = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=3e21d0634b298df121ea5353d494ab2b&page=1";
+const IMG_API = "https://image.tmdb.org/t/p/w1280";
+const SEARCH_API = "https://api.themoviedb.org/3/search/movie?&api_key=3e21d0634b298df121ea5353d494ab2b&query=";
+
 
 function App() {
-  const [state, setState] = useState({
-    s: "",
-    results: [],
-    selected: {}
-  });
+  const [ movies, setMovies ] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const BASE_URL = 'https://api.themoviedb.org/3/search/movie?api_key=3e21d0634b298df121ea5353d494ab2b&language=en-US&query=';
+  useEffect(() => {
+    getMovies(FEATURED_API);
+  }, []);
 
-
-  const search = (e) => {
-    if (e.key === "Enter") {
-      axios(BASE_URL + state.s + "&page=1&include_adult=false").then((data) => {
-        console.log(data);
-        let results = data.Search;
-
-        setState(prevState => {
-          return { ...prevState, results: results }
-        })
-      });
-    }
-  }
-
-  const handleInput = (e) => {
-    let s = e.target.value;
-
-    setState(prevState => {
-      return {...prevState, s: s}
+  const getMovies = (API) => {
+    fetch(API)
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      setMovies(data.results);
     });
   }
 
+  const handleOnSubmit = (e) => {
+    e.preventDefault();
+
+    if(searchTerm) {
+      getMovies(SEARCH_API + searchTerm);
+      
+      setSearchTerm('');
+    }
+  };
+
+  const handleOnChange = (e) => {
+    setSearchTerm(e.target.value);
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-       <h1>Movie Database</h1>
+    <>
+      <header>
+        <form onSubmit={handleOnSubmit}>
+        <input 
+          className="search" 
+          type="search" 
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={handleOnChange}
+        />
+        </form>
       </header>
-      <main>
-        <Search handleInput={handleInput} search={search} />
-      </main>
-    </div>
+      <div className="movie-container">
+      {movies.length > 0 && movies.map((movie) =>
+        <Movie key={movie.id} {...movie} />
+      )}
+    
+      </div>
+    </>
   );
 }
 
